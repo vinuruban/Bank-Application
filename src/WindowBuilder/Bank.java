@@ -1,4 +1,4 @@
-package MultiWindow;
+package WindowBuilder;
 
 import java.awt.EventQueue;
 
@@ -21,6 +21,8 @@ import java.text.SimpleDateFormat;
 import java.awt.event.ActionEvent;
 import java.awt.Color;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JScrollBar;
 
 public class Bank {
 
@@ -39,7 +41,6 @@ public class Bank {
 	private JTextField textField_10;
 	private JTextField textField_11;
 	private JTextField textField_12;
-	private JTable table;
 	JPanel HomePage;
 	JPanel CreatePage;
 	JPanel DepositPage;
@@ -73,7 +74,89 @@ public class Bank {
 
 	/**
 	 * Initialize the contents of the frame.
+	 * @return 
 	 */
+	
+	public int calcDeposit(String id1) {
+		
+		Connection con2 = null;
+		Statement stmnt2 = null;
+		int store = 0;
+		int d_money = 0;
+		
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+			con2 = DriverManager.getConnection("jdbc:mysql://localhost:3306/bank", "root", "password");
+			stmnt2 = con2.createStatement();
+			ResultSet R = stmnt2.executeQuery("SELECT amount FROM bank.deposit where account_id = '" + id1 + "'");
+//			ResultSet R2 = stmnt2.executeQuery("SELECT amount FROM bank.withdrawal where account_id = '" + id1 + "'");
+			
+			while (R.next()) {
+				
+				d_money = R.getInt("amount");
+//				String w_money = R2.getString("amount");
+				
+				store = store + d_money; //uses while loop to add the list of amount!!!
+
+			}
+			
+			
+			R.close();
+//			R2.close();
+			stmnt2.close();
+			con2.close();
+	
+		}
+		
+		catch(Exception se) {
+			
+		}
+		return store;
+	}
+	
+	
+	
+	public int calcWithdrawal(String id1) {
+		
+		Connection con2 = null;
+		Statement stmnt2 = null;
+		int store = 0;
+		int w_money = 0;
+		
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+			con2 = DriverManager.getConnection("jdbc:mysql://localhost:3306/bank", "root", "password");
+			stmnt2 = con2.createStatement();
+			ResultSet R = stmnt2.executeQuery("SELECT amount FROM bank.withdrawal where account_id = '" + id1 + "'");
+			
+			while (R.next()) {
+				
+				w_money = R.getInt("amount");
+				
+				store = store + w_money; //uses while loop to add the list of amount!!!
+
+			}
+			
+			
+			R.close();
+			stmnt2.close();
+			con2.close();
+	
+		}
+		
+		catch(Exception se) {
+			
+		}
+		return store;
+	}
+	
+	public int calcBalance(String id1) {
+		return calcDeposit(id1) - calcWithdrawal(id1);
+	}
+	
+	
+	
+	
 	private void initialize() {
 		frame = new JFrame();
 		frame.setBounds(100, 100, 450, 300);
@@ -311,6 +394,10 @@ public class Bank {
 						
 						textField_4.setText(fname);
 						textField_5.setText(address1);
+					
+						String displayDep = Integer.toString(calcBalance(getid));
+						
+						textField_6.setText(displayDep);
 					}
 					
 					R.close();
@@ -360,6 +447,9 @@ public class Bank {
 					con = DriverManager.getConnection("jdbc:mysql://localhost:3306/?useSSL=false", "root", "password");
 					stmnt = con.createStatement();
 					stmnt.executeUpdate("INSERT INTO bank.deposit values('" + id1 + iid2 + "', '" + id1 + "', " + Amount1 + " , '" + time1 +  "')");
+					
+					String displayDep = Integer.toString(calcBalance(id1));
+					textField_6.setText(displayDep);
 					
 					stmnt.close();
 					con.close();
@@ -459,6 +549,9 @@ public class Bank {
 						
 						textField_9.setText(fname);
 						textField_10.setText(address1);
+						
+						String displayDep = Integer.toString(calcBalance(getid));
+						textField_11.setText(displayDep);
 					}
 					
 					R.close();
@@ -487,6 +580,37 @@ public class Bank {
 		JButton button_3 = new JButton("...");
 		button_3.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				Date datee = new Date();
+				Timestamp tss = new Timestamp(datee.getTime());
+				String time2 = tss.toString();
+				
+				int id3 = (int) (Math.random()*1000);
+				String iid3 = Integer.toString(id3);
+				
+				String id4 = textField_8.getText();
+				String amount2 = textField_12.getText();
+				int Amount2 = Integer.parseInt(amount2);
+				
+				
+				Connection con = null;
+				Statement stmnt = null;
+				
+				try {
+					Class.forName("com.mysql.jdbc.Driver");
+					con = DriverManager.getConnection("jdbc:mysql://localhost:3306/?useSSL=false", "root", "password");
+					stmnt = con.createStatement();
+					stmnt.executeUpdate("INSERT INTO bank.withdrawal values('" + id4 + iid3 + "', '" + id4 + "', " + Amount2 + " , '" + time2 +  "')");
+					
+					stmnt.close();
+					con.close();
+					
+					String displayDep = Integer.toString(calcBalance(id4));
+					textField_11.setText(displayDep);
+				}
+				
+				catch(Exception se) {
+					
+				}
 			}
 		});
 		button_3.setBounds(331, 107, 37, 23);
@@ -512,10 +636,6 @@ public class Bank {
 		StatementPage = new JPanel();
 		frame.getContentPane().add(StatementPage, "name_3189999307491140");
 		StatementPage.setLayout(null);
-		
-		table = new JTable();
-		table.setBounds(22, 80, 391, 170);
-		StatementPage.add(table);
 		
 		JPanel panel_26 = new JPanel();
 		panel_26.setBackground(Color.DARK_GRAY);
@@ -543,12 +663,73 @@ public class Bank {
 		button_4.setBounds(385, 38, 39, 20);
 		button_4.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				Connection con = null;
+				Statement stmnt = null;
+//				Array stmntList;
+				
+				String getid = textField_14.getText();
+				
+				try {
+					Class.forName("com.mysql.jdbc.Driver");
+					con = DriverManager.getConnection("jdbc:mysql://localhost:3306/bank", "root", "password");
+					stmnt = con.createStatement();
+					ResultSet R = stmnt.executeQuery("SELECT * FROM bank.deposit where account_id = '" + getid + "'"); 
+					
+					
+					while (R.next()) {
+						
+						int amount = R.getInt("amount");
+						String date = R.getString("date");
+						
+//						textField_9.setText(fname);
+//						textField_10.setText(address1);
+						
+						String displayDep = Integer.toString(calcBalance(getid));
+						textField_11.setText(displayDep);
+						
+						System.out.println(amount + " " + date);
+					}
+					
+					R.close();
+//					stmnt.close();
+//					con.close();
+					
+					
+					
+					ResultSet R2 = stmnt.executeQuery("SELECT * FROM bank.withdrawal where account_id = '" + getid + "'"); 
+					
+					while (R2.next()) {
+						
+						int amount1 = R2.getInt("amount");
+						String date1 = R2.getString("date");
+						
+//						textField_9.setText(fname);
+//						textField_10.setText(address1);
+						
+						String displayDep = Integer.toString(calcBalance(getid));
+						textField_11.setText(displayDep);
+						
+						System.out.println(amount1 + " " + date1);
+					}
+					
+					R2.close();
+					stmnt.close();
+					con.close();
+					
+					
+				}
+				
+				catch(Exception se) {
+					
+				}
+				
+				
 			}
 		});
 		panel_26.add(button_4);
 		
-		JLabel lblEnterAccountNumber_1 = new JLabel("Enter AccNo:");
-		lblEnterAccountNumber_1.setBounds(216, 41, 77, 14);
+		JLabel lblEnterAccountNumber_1 = new JLabel("Enter ID:");
+		lblEnterAccountNumber_1.setBounds(231, 41, 59, 14);
 		panel_26.add(lblEnterAccountNumber_1);
 		lblEnterAccountNumber_1.setForeground(Color.WHITE);
 		lblEnterAccountNumber_1.setFont(new Font("Tahoma", Font.BOLD, 11));
@@ -559,5 +740,18 @@ public class Bank {
 		panel_26.add(label_23);
 		label_23.setForeground(SystemColor.textHighlight);
 		label_23.setFont(new Font("Tahoma", Font.BOLD, 14));
+		
+		JPanel panel_3 = new JPanel();
+		panel_3.setBounds(10, 80, 414, 170);
+		StatementPage.add(panel_3);
+		panel_3.setLayout(null);
+		
+		JScrollBar scrollBar = new JScrollBar();
+		scrollBar.setBounds(397, 0, 17, 170);
+		panel_3.add(scrollBar);
+		
+		JTextArea textArea = new JTextArea();
+		textArea.setBounds(0, 0, 389, 170);
+		panel_3.add(textArea);
 	}
 }
