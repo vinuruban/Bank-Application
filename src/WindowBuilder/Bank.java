@@ -13,6 +13,7 @@ import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.sql.Timestamp;
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.Date;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -47,7 +48,11 @@ public class Bank {
 	JPanel WithdrawPage;
 	JPanel StatementPage;
 	JLabel lblSuccessfullyAdded;
+	JLabel lblBalance_1;
 	private JTextField textField_14;
+	private JTextArea textArea;
+	private JTextArea textArea_1;
+	private JTextField textField_13;
 
 	/**
 	 * Launch the application.
@@ -496,7 +501,7 @@ public class Bank {
 		WithdrawPage.add(label_2);
 		
 		textField_8 = new JTextField();
-		textField_8.setBounds(178, 78, 143, 20);
+		textField_8.setBounds(178, 78, 176, 20);
 		WithdrawPage.add(textField_8);
 		textField_8.setColumns(10);
 		
@@ -564,7 +569,7 @@ public class Bank {
 				}
 			}
 		});
-		button_2.setBounds(331, 77, 37, 23);
+		button_2.setBounds(369, 77, 37, 23);
 		WithdrawPage.add(button_2);
 		
 		JLabel lblEnterAmountTo_1 = new JLabel("Enter amount to withdraw: ");
@@ -574,7 +579,7 @@ public class Bank {
 		
 		textField_12 = new JTextField();
 		textField_12.setColumns(10);
-		textField_12.setBounds(188, 109, 133, 20);
+		textField_12.setBounds(188, 109, 166, 20);
 		WithdrawPage.add(textField_12);
 		
 		JButton button_3 = new JButton("...");
@@ -594,8 +599,14 @@ public class Bank {
 				
 				Connection con = null;
 				Statement stmnt = null;
+				int bal = Integer.parseInt(textField_11.getText());
 				
 				try {
+					
+					if (bal<Amount2) {
+						textField_12.setText("** INSUFFICIENT FUNDS **");
+					}
+					else {
 					Class.forName("com.mysql.jdbc.Driver");
 					con = DriverManager.getConnection("jdbc:mysql://localhost:3306/?useSSL=false", "root", "password");
 					stmnt = con.createStatement();
@@ -606,6 +617,7 @@ public class Bank {
 					
 					String displayDep = Integer.toString(calcBalance(id4));
 					textField_11.setText(displayDep);
+					}
 				}
 				
 				catch(Exception se) {
@@ -613,7 +625,7 @@ public class Bank {
 				}
 			}
 		});
-		button_3.setBounds(331, 107, 37, 23);
+		button_3.setBounds(369, 107, 37, 23);
 
 		WithdrawPage.add(button_3);
 		
@@ -665,9 +677,11 @@ public class Bank {
 			public void actionPerformed(ActionEvent e) {
 				Connection con = null;
 				Statement stmnt = null;
-//				Array stmntList;
+				String inc="";
+				String inc1="";
 				
 				String getid = textField_14.getText();
+				textField_13.setVisible(true);
 				
 				try {
 					Class.forName("com.mysql.jdbc.Driver");
@@ -681,18 +695,20 @@ public class Bank {
 						int amount = R.getInt("amount");
 						String date = R.getString("date");
 						
-//						textField_9.setText(fname);
-//						textField_10.setText(address1);
 						
 						String displayDep = Integer.toString(calcBalance(getid));
-						textField_11.setText(displayDep);
+						textField_13.setText(displayDep);
+
 						
-						System.out.println(amount + " " + date);
+						inc = inc + "|| " + amount + " || " + date + " ||" + "\n";
+
 					}
 					
+					textArea.setText("|| Amount || Date & Time ||" + "\n" + inc);
+					
+			
+					
 					R.close();
-//					stmnt.close();
-//					con.close();
 					
 					
 					
@@ -703,14 +719,16 @@ public class Bank {
 						int amount1 = R2.getInt("amount");
 						String date1 = R2.getString("date");
 						
-//						textField_9.setText(fname);
-//						textField_10.setText(address1);
 						
-						String displayDep = Integer.toString(calcBalance(getid));
-						textField_11.setText(displayDep);
+//						String displayDep1 = Integer.toString(calcBalance(getid));
+//						textField_11.setText(displayDep1);
 						
-						System.out.println(amount1 + " " + date1);
+						inc1 = inc1 + "|| " + amount1 + " || " + date1 + " ||" + "\n";
+						
 					}
+					
+					textArea_1.setText("|| Amount || Date & Time ||" + "\n" + inc1);
+					
 					
 					R2.close();
 					stmnt.close();
@@ -735,23 +753,62 @@ public class Bank {
 		lblEnterAccountNumber_1.setFont(new Font("Tahoma", Font.BOLD, 11));
 		
 		JLabel label_23 = new JLabel("Your Statement");
-		label_23.setBounds(37, 11, 144, 43);
+		label_23.setBounds(20, 5, 133, 29);
 		label_23.setForeground(new Color(0, 204, 255));
 		panel_26.add(label_23);
 		label_23.setForeground(SystemColor.textHighlight);
 		label_23.setFont(new Font("Tahoma", Font.BOLD, 14));
 		
+		textField_13 = new JTextField();
+		textField_13.setColumns(10);
+		textField_13.setBounds(104, 38, 77, 20);
+		panel_26.add(textField_13);
+		textField_13.setVisible(false);
+		
+		JLabel lblBalance_1 = new JLabel("Balance:");
+		lblBalance_1.setForeground(Color.WHITE);
+		lblBalance_1.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblBalance_1.setBounds(46, 41, 59, 14);
+		panel_26.add(lblBalance_1);
+		
 		JPanel panel_3 = new JPanel();
-		panel_3.setBounds(10, 80, 414, 170);
+		panel_3.setBounds(10, 80, 215, 170);
 		StatementPage.add(panel_3);
 		panel_3.setLayout(null);
 		
 		JScrollBar scrollBar = new JScrollBar();
-		scrollBar.setBounds(397, 0, 17, 170);
+		scrollBar.setBounds(198, 0, 17, 170);
 		panel_3.add(scrollBar);
 		
-		JTextArea textArea = new JTextArea();
-		textArea.setBounds(0, 0, 389, 170);
+		textArea = new JTextArea();
+		textArea.setFont(new Font("Monospaced", Font.PLAIN, 9));
+		textArea.setBounds(0, 24, 193, 146);
 		panel_3.add(textArea);
+		
+		JLabel label_7 = new JLabel("Money In");
+		label_7.setForeground(SystemColor.textHighlight);
+		label_7.setFont(new Font("Tahoma", Font.BOLD, 11));
+		label_7.setBounds(66, 0, 64, 14);
+		panel_3.add(label_7);
+		
+		JPanel panel_4 = new JPanel();
+		panel_4.setLayout(null);
+		panel_4.setBounds(225, 80, 209, 170);
+		StatementPage.add(panel_4);
+		
+		JScrollBar scrollBar_1 = new JScrollBar();
+		scrollBar_1.setBounds(192, 0, 17, 170);
+		panel_4.add(scrollBar_1);
+		
+		JLabel lblMoneyOut = new JLabel("Money Out");
+		lblMoneyOut.setForeground(SystemColor.textHighlight);
+		lblMoneyOut.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblMoneyOut.setBounds(62, 0, 68, 14);
+		panel_4.add(lblMoneyOut);
+		
+		textArea_1 = new JTextArea();
+		textArea_1.setFont(new Font("Monospaced", Font.PLAIN, 9));
+		textArea_1.setBounds(0, 23, 187, 147);
+		panel_4.add(textArea_1);
 	}
 }
